@@ -70,3 +70,5 @@ Here is a list of available characteristics for transformation:
 <br>
 
 **A special thanks to the creators of [Extempo](https://www.extempo.rocks/): Dr. Stefan Uddenberg, Rachit Shah, and Dr. Daniel Albohn for allowing us to use their model**
+
+[Model documentation](https://www.pnas.org/doi/10.1073/pnas.2115228119)
