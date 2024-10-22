@@ -1,0 +1,4 @@
+Characteristic: asian
+Beta: 3.0
+S3 Key: 61/transform/5f60caa7-e999-4ebc-add7-0e57a8436a50~~generated.jpeg~~13953~~0
+Photo Filename: transformed_face_asian_20240928_223243.jpg

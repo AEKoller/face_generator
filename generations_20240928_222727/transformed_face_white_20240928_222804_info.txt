@@ -1,0 +1,4 @@
+Characteristic: white
+Beta: 3.0
+S3 Key: 61/transform/91fcd53d-b1b5-4289-9527-f118f4e93fb6~~generated.jpeg~~13947~~0
+Photo Filename: transformed_face_white_20240928_222804.jpg

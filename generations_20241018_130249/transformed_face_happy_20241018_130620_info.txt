@@ -1,0 +1,4 @@
+Characteristic: happy
+Beta: -2.0
+S3 Key: 61/transform/33c89abd-a674-4b97-9799-c24dbfb12c93~~generated.jpeg~~14284~~0
+Photo Filename: transformed_face_happy_20241018_130620.jpg

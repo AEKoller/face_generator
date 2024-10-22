@@ -1,0 +1,4 @@
+Characteristic: black
+Beta: 0
+S3 Key: 61/transform/22c162e1-87bf-48b0-9fb4-eea60ee090a6~~generated.jpeg~~13942~~1
+Photo Filename: transformed_face_1_20240928_221121.jpg

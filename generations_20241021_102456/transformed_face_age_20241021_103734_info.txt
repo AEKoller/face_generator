@@ -1,0 +1,4 @@
+Characteristic: age
+Beta: 7.0
+S3 Key: 61/transform/74f17390-e261-4ba7-b3aa-e34ac38610e8~~generated.jpeg~~14295~~0
+Photo Filename: transformed_face_age_20241021_103734.jpg

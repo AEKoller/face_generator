@@ -1,4 +1,3 @@
-# This code was created using Claude 3.5 Sonnet
 import requests
 import json
 import sys
@@ -13,7 +12,7 @@ BASE_URL = "https://gateway.extempo.rocks"
 def login(username, password):
     try:
         print(f"Attempting to connect to {BASE_URL}/auth/login")
-        response = requests.post(f"{BASE_URL}/auth/login", json={"username": username, "password": password}, timeout=5)
+        response = requests.post(f"{BASE_URL}/auth/login", json={"username": username, "password": password}, timeout=10)
         print(f"Response status code: {response.status_code}")
         print(f"Response content: {response.text}")
         if response.status_code == 200:
@@ -30,7 +29,7 @@ def login(username, password):
 def get_user_info(token):
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        response = requests.get(f"{BASE_URL}/users/me", headers=headers, timeout=5)
+        response = requests.get(f"{BASE_URL}/users/me", headers=headers, timeout=10)
         if response.status_code == 200:
             return response.json()
         else:
@@ -52,7 +51,7 @@ def wait_with_message(seconds, message):
 def decode_random_face(token):
     headers = {"Authorization": f"Bearer {token}"}
     try:
-        response = requests.get(f"{BASE_URL}/decode", headers=headers, timeout=5)
+        response = requests.get(f"{BASE_URL}/decode", headers=headers, timeout=10)
         if response.status_code == 200:
             return response.json()
         else:
@@ -67,7 +66,7 @@ def get_image(token, path, id):
     headers = {"Authorization": f"Bearer {token}"}
     params = {"path": path, "id": id}
     try:
-        response = requests.get(f"{BASE_URL}/image/{path}/{id}", headers=headers, params=params, timeout=5)
+        response = requests.get(f"{BASE_URL}/image/{path}/{id}", headers=headers, params=params, timeout=10)
         if response.status_code == 200:
             return response.content
         else:
@@ -108,7 +107,7 @@ def get_predictions(token, s3_key):
     try:
         url = f"{BASE_URL}/predictions/{prefix}/{image_name}"
         print(f"Requesting predictions from: {url}")
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             return response.json()
         else:
@@ -160,27 +159,6 @@ def save_characteristic_info(attribute, beta, filename, folder, s3_key, photo_fi
     print(f"Characteristic info saved to {full_path}")
 
 
-def request_transformation(token, s3_key, attribute, beta, control_attributes=None):
-    headers = {"Authorization": f"Bearer {token}"}
-    path, id = s3_key.split('/', 1)[1].split('/', 1)
-    data = {
-        "attribute": attribute,
-        "betas": [float(beta)],
-        "control_attributes": control_attributes,
-        "interpretable_betas": True
-    }
-    try:
-        response = requests.post(f"{BASE_URL}/request_transformation/{path}/{id}", json=data, headers=headers, timeout=5)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Failed to request transformation: {response.text}")
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred while requesting transformation: {e}")
-        return None
-
-
 def generate_and_approve_face(token, output_folder):
     while True:
         random_face = decode_random_face(token)
@@ -191,7 +169,7 @@ def generate_and_approve_face(token, output_folder):
         print(f"Random face generated: {json.dumps(random_face, indent=2)}")
         s3_key = random_face["s3_key"]
 
-        wait_with_message(5, "Waiting for the server to generate the image...")
+        wait_with_message(10, "Waiting for the server to generate the image...")
 
         path, id = s3_key.split('/', 1)[1].split('/', 1)
         image_data = get_image(token, path, id)
@@ -217,6 +195,38 @@ def generate_and_approve_face(token, output_folder):
             print("Generating a new random face...")
 
 
+def request_transformation(token, s3_key, attribute, beta, control_attributes=None):
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Remove only the trailing identifier if present, but keep the image name
+    s3_key_parts = s3_key.split('~~')
+    if len(s3_key_parts) > 2:
+        s3_key = '~~'.join(s3_key_parts[:2])  # Keep everything up to and including the image name
+    
+    path, id = s3_key.split('/', 1)[1].split('/', 1)
+    data = {
+        "attribute": attribute,
+        "betas": [float(beta)],
+        "control_attributes": control_attributes,
+        "interpretable_betas": True
+    }
+    
+    # Print the s3_key being used in the JSON payload
+    print(f"Using s3_key in transformation request: {s3_key}")
+    
+    try:
+        response = requests.post(f"{BASE_URL}/request_transformation/{path}/{id}", json=data, headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Failed to request transformation: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while requesting transformation: {e}")
+        return None
+
+
+
 def main():
     print(f"Python version: {sys.version}")
     print(f"Requests version: {requests.__version__}")
@@ -237,43 +247,57 @@ def main():
 
     while True:
         # Generate and approve initial random face
-        s3_key = generate_and_approve_face(token, output_folder)
-        if not s3_key:
+        initial_s3_key = generate_and_approve_face(token, output_folder)
+        if not initial_s3_key:
             return
 
+        current_s3_key = initial_s3_key
+
         while True:
-            attribute = input("Enter the characteristic to transform (or 'quit' to exit): ")
-            if attribute.lower() == 'quit':
+        # Generate and approve initial random face
+            initial_s3_key = generate_and_approve_face(token, output_folder)
+            if not initial_s3_key:
                 return
 
-            beta = input("Enter the beta value for the transformation: ")
-            try:
-                beta = float(beta)
-            except ValueError:
-                print("Invalid beta value. Please enter a number.")
-                continue
+            current_s3_key = initial_s3_key
 
-            transformation = request_transformation(token, s3_key, attribute, beta)
-            if transformation:
-                print(f"Transformation result: {json.dumps(transformation, indent=2)}")
+            while True:
+                attribute = input("Enter the characteristic to transform (or 'quit' to exit): ")
+                if attribute.lower() == 'quit':
+                    return
 
-                wait_with_message(5, "Waiting for the server to generate transformed image...")
+                beta = input("Enter the beta value for the transformation: ")
+                try:
+                    beta = float(beta)
+                except ValueError:
+                    print("Invalid beta value. Please enter a number.")
+                    continue
 
-                # Get transformed image
-                image_path = transformation["images"][0]
-                path, id = image_path.split('/', 1)[1].split('/', 1)
-                image_data = get_image(token, path, id)
-                if image_data:
-                    image_filename = get_timestamped_filename(f"transformed_face_{attribute}", "jpg")
-                    save_and_show_image(image_data, image_filename, output_folder)
-                    
-                    info_filename = image_filename.replace(".jpg", "_info.txt")
-                    save_characteristic_info(attribute, beta, info_filename, output_folder, image_path, image_filename)
+                transformation = request_transformation(token, current_s3_key, attribute, beta)
+                if transformation:
+                    print(f"Transformation result: {json.dumps(transformation, indent=2)}")
+
+                    wait_with_message(10, "Waiting for the server to generate transformed image...")
+
+                    # Get transformed image
+                    transformed_s3_key = transformation["images"][0]
+                    path, id = transformed_s3_key.split('/', 1)[1].split('/', 1)
+                    image_data = get_image(token, path, id)
+                    if image_data:
+                        image_filename = get_timestamped_filename(f"transformed_face_{attribute}", "jpg")
+                        save_and_show_image(image_data, image_filename, output_folder)
+                        
+                        info_filename = image_filename.replace(".jpg", "_info.txt")
+                        save_characteristic_info(attribute, beta, info_filename, output_folder, transformed_s3_key, image_filename)
+
+                        # Update the current_s3_key for the next transformation
+                        # Keep everything up to and including the image name, remove trailing identifier
+                        current_s3_key = '~~'.join(transformed_s3_key.split('~~')[:2])
+                    else:
+                        print("Failed to retrieve transformed image")
+
                 else:
-                    print("Failed to retrieve transformed image")
-
-            else:
-                print("Transformation failed. Please try again.")
+                    print("Transformation failed. Please try again.")
 
             while True:
                 choice = input("Would you like to: (1) Perform another transformation, (2) Generate a new random face, or (3) Quit? ").strip()

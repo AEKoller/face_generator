@@ -1,0 +1,4 @@
+Characteristic: gay
+Beta: 5.0
+S3 Key: 61/transform/f8fc2db3-c2ba-4ebf-8e18-0b12863182fd~~generated.jpeg~~13966~~0
+Photo Filename: transformed_face_gay_20240928_224017.jpg

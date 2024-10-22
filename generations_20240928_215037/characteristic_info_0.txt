@@ -1,0 +1,2 @@
+Characteristic: black
+Beta: -2

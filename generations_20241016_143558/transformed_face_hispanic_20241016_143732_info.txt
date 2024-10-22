@@ -1,0 +1,4 @@
+Characteristic: hispanic
+Beta: 3.0
+S3 Key: 61/transform/c5c46175-b5b2-4f92-a330-3bf4615ce1ec~~generated.jpeg~~14249~~0
+Photo Filename: transformed_face_hispanic_20241016_143732.jpg

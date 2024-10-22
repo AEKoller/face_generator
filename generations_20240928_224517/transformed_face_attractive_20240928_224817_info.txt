@@ -1,0 +1,4 @@
+Characteristic: attractive
+Beta: -5.0
+S3 Key: 61/transform/3aafe467-8838-4a29-9608-8dd1244644e4~~generated.jpeg~~13976~~0
+Photo Filename: transformed_face_attractive_20240928_224817.jpg

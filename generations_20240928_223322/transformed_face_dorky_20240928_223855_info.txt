@@ -1,0 +1,4 @@
+Characteristic: dorky
+Beta: 5.0
+S3 Key: 61/transform/148ca6ac-5ec0-4cdd-b7f2-b0747ff24ba7~~generated.jpeg~~13962~~0
+Photo Filename: transformed_face_dorky_20240928_223855.jpg
